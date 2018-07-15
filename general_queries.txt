@@ -1,0 +1,40 @@
+GET account_credit/person/_search
+
+
+Find term in document
+
+{
+"query" : {
+
+				"term" : {"first_name.keyword":"Gamaliel"}
+		
+	}
+}
+
+
+-----------------
+sort query
+
+{
+"query" : {
+	"match_all" : {}
+	},
+	"sort" :{
+			"id" :{"order":"desc"}
+	}
+}
+
+--------------- operator on query
+
+GET account_credit/person/_search
+{
+  "query": {
+    "match": {
+      "creditcard_type": {
+                  "query": "jcb maestro",
+                  "operator": "and/or"
+        
+      }
+    }
+  }
+}
