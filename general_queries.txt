@@ -38,3 +38,248 @@ GET account_credit/person/_search
     }
   }
 }
+
+
+------------------------the common term problem------------------
+cutoff_frequency : define that term which have frequency greater then mention term is common word.
+
+GET account_credit/person/_search
+{
+  "query": {
+    "common" : {
+      "creditcard_type" :{
+        "query":"jcb",
+        "cutoff_frequency": 0.001
+      }
+    
+
+--------------------------------------------Boolean compound query------------------------
+
+Query must have creditcard_type is jcb and gender is male
+
+GET account_credit/person/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+         { "match": {
+            "creditcard_type.keyword": "jcb"
+            }
+         },
+         { "match": {
+            "gender.keyword": "Male"
+            }
+         }
+      ]
+      
+    }
+  }
+}
+
+Query must have creditcard_type is jcb or type is mastercard
+
+GET account_credit/person/_search
+{
+  "size": 100, 
+  "query": {
+    "bool": {
+      "should": [
+         { "match": {
+            "creditcard_type.keyword": "jcb"
+            }
+         },
+         { "match": {
+               "creditcard_type.keyword": "mastercard"
+            }
+         }
+      ]
+      
+    }
+  }
+}
+
+Query must not have creditcard_type is jcb or type is mastercard
+
+GET account_credit/person/_search
+{
+  "size": 100, 
+  "query": {
+    "bool": {
+      "must_not": [
+         { "match": {
+            "creditcard_type.keyword": "jcb"
+            }
+         },
+         { "match": {
+               "creditcard_type.keyword": "mastercard"
+            }
+         }
+      ]
+      
+    }
+  }
+}
+
+-----------------------------------------------Filter---------------------------------------
+
+filter document whose gender is male and id is between 10-20 and creditcard_type is maestro
+
+GET account_credit/person/_search
+{
+  "query": {
+    "bool": {
+      "filter": [
+        
+        {
+          "match" :
+          {
+          "gender" : "male"
+        }
+          
+        },{
+          
+          "match" :{
+            "creditcard_type": "maestro"
+          }
+        },
+        {
+          "range" :
+          {
+            "id": {"gte":10,"lte":20
+              
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+---------------------------------------------------------------------find unique value in document respect to field-------------
+
+
+GET account_credit/person/_search 
+{
+  "aggs": {
+    "avg_by_ip": {
+      "cardinality": {
+        "field": "creditcard_type.keyword"
+      }
+    }
+  }
+}
+
+-----------------------------------------------bucketthe data o---------------------------------------
+
+group by document count on the basis of creditcard_type
+ 
+GET account_credit/person/_search 
+{
+  "aggs": {
+    "gender_bucket": {
+      "terms": {
+        "field": "creditcard_type.keyword"
+      }
+    }
+  }
+}
+
+seggregated the document count on the basis of ID
+
+GET account_credit/person/_search 
+{
+  "aggs": {
+    "gender_bucket": {
+      "range": {
+        "field": "id",
+        "ranges": [
+          {"to": 50},
+           { "from": 50,"to": 100},
+           {
+             "from": 100
+           }
+          
+        ]
+              }
+    }
+  }
+}
+
+seggregated the document count on the basis of ID and also have key symbol
+
+GET account_credit/person/_search 
+{
+  "aggs": {
+    "gender_bucket": {
+      "range": {
+        "field": "id",
+        "ranges": [
+          {"key":"less_50" , "to": 50},
+           { "key":"50_to_100" , "from": 50,"to": 100},
+           {
+             "key":"greater_then_100" , "from": 100
+           }
+          
+        ]
+              }
+    }
+  }
+}
+
+
+
+----------------------------------------------------------- count total balance on the basis of gender
+GET account_credit/person/_search 
+{
+  "aggs": {
+    "count_by_gender": {
+      "terms": {
+        "field": "gender.keyword",
+        "size": 10
+      },
+      "aggs": {
+        "total_count": {
+          "sum": {
+            "field": "id"
+          }
+        }
+      }
+    }
+  }
+}
+
+
+on the basis of card type
+
+
+GET account_credit/person/_search 
+{
+  "aggs": {
+    "count_by_gender": {
+      "terms": {
+        "field": "creditcard_type.keyword",
+        "size": 10
+      },
+      "aggs": {
+        "total_count": {
+          "sum": {
+            "field": "id"
+          }
+        }
+      }
+    }
+  }
+}
+
+
+
+
+
+---------------------------------------------------------------------Aggegations-----------------------------------------
+
+Metric aggregation
+
+
+
+
+
+

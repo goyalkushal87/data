@@ -1,0 +1,80 @@
+
+general alert:- 
+
+
+{
+  "trigger": {
+    "schedule": {
+      "interval": "30m"
+    }
+  },
+  "input": {
+    "search": {
+      "request": {
+        "search_type": "query_then_fetch",
+        "indices": [
+          "account_credit"
+        ],
+        "types": [],
+        "body": {
+          "size": 0,
+          "query": {
+            "match_all": {}
+          }
+        }
+      }
+    }
+  },
+  "condition": {
+    "compare": {
+      "ctx.payload.hits.total": {
+        "gte": 10
+      }
+    }
+  },
+  "actions": {
+    "my-logging-action": {
+      "logging": {
+        "level": "info",
+        "text": "There are {{ctx.payload.hits.total}} documents in your index. Threshold is 10."
+      }
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+----------------------------------- find the number of transaction from a card-------------------
+
+
+-----------------------------------find number of transaction with card from different ip address-----------------------------
+
+
+----------------------------------find total number of transaction from a card in 24 hours-----------------------------------
+
+
+--------------------------------which type of card have maximum transaction-------------------------------------------------
+
+
+
+--------------------------------- monitoring card transaction single----------------------------
+
+
+------------------------------------find sum of tranaction from a card----------------------------
+
+
+
+
+
