@@ -76,5 +76,136 @@ general alert:-
 
 
 
+---------------------------------------------watcher on the static data---- credit card----------------------------with different ip------------------
+{
+  "trigger": {
+    "schedule": {
+      "interval": "30m"
+    }
+  },
+  "input": {
+    "search": {
+      "request": {
+        "search_type": "query_then_fetch",
+        "indices": [
+          "*"
+        ],
+        "types": [],
+        "body": {
+          "size": 0,
+          "aggs": {
+            "credit_fraud": {
+              "terms": {
+                "field": "creditcard_number",
+                "size": 10,
+                "shard_size": 10000
+              },
+              "aggs": {
+                "total_count": {
+                  "cardinality": {
+                    "field": "ip_address"
+                  }
+                },
+                "ip_bucket_filter": {
+                  "bucket_selector": {
+                    "buckets_path": {
+                      "totalSales": "total_count"
+                    },
+                    "script": "params.totalSales >1"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "condition": {
+    "array_compare": {
+      "ctx.payload.aggregations.credit_fraud.buckets": {
+       "path":"total_count.value" ,
+       "gte":{
+           "value":1
+       }
+      }
+    }
+  },
+  "actions": {
+    "my-logging-action": {
+      "logging": {
+        "level": "info",
+        "text": "There are {{ctx.payload.aggregations.credit_fraud.buckets.size}} documents in your index. Threshold is 10."
+      }
+    }
+  }
+}
+
+---------------------------------------------------------------Above one with script----------------------
 
 
+{
+  "trigger": {
+    "schedule": {
+      "interval": "30m"
+    }
+  },
+  "input": {
+    "search": {
+      "request": {
+        "search_type": "query_then_fetch",
+        "indices": [
+          "*"
+        ],
+        "types": [],
+        "body": {
+          "size": 0,
+          "aggs": {
+            "credit_fraud": {
+              "terms": {
+                "field": "creditcard_number",
+                "size": 10,
+                "shard_size": 10000
+              },
+              "aggs": {
+                "total_count": {
+                  "cardinality": {
+                    "field": "ip_address"
+                  }
+                },
+                "ip_bucket_filter": {
+                  "bucket_selector": {
+                    "buckets_path": {
+                      "totalSales": "total_count"
+                    },
+                    "script": "params.totalSales >1"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "condition": {
+    "script": {
+      "inline": 
+      " return ctx.payload.aggregations.credit_fraud.buckets.length > params.threshold",
+      "params" : {
+        "threshold" : 1
+      }
+      
+    }
+  },
+  "actions": {
+    "my-logging-action": {
+      "logging": {
+        "level": "info",
+        "text": "There are {{ctx.payload.aggregations.credit_fraud.buckets.size}} documents in your index. Threshold is 10."
+      }
+    }
+  }
+}
+
+-----------------------------------------------------------------------------------------------------------------------------------------
